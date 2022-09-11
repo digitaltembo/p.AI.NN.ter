@@ -1,0 +1,7 @@
+.cache
+__pycache__
+.vscode
+output
+uploads
+venv
+node_modules

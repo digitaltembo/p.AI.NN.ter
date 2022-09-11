@@ -1,0 +1,21 @@
+version: "3.6"
+services:
+  airt:
+    build: .
+    ports:
+      - "5555:555"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ./.cache:/cache
+    environment:
+      - CACHE_DIR=/cache
+      - HF_HOME=/cache/huggingface
+      - USE_HALF_PRECISION=True
+      - UPSCALE_TILE_SIZE=300
+      - UPSCALE_TILE_BORDER=20
