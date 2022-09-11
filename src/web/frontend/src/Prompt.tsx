@@ -1,7 +1,16 @@
-import React from "react";
-import styled from "styled-components";
-import { Button, Divider, IconButton, InputBase, Paper, TextField } from "@mui/material";
-import { AddPhotoAlternate, Dangerous, ImagesearchRoller, Settings } from "@mui/icons-material";
+import React from 'react';
+import styled from 'styled-components';
+import {
+  Divider,
+  IconButton,
+  TextField,
+} from '@mui/material';
+import {
+  AddPhotoAlternate,
+  Dangerous,
+  ImagesearchRoller,
+  Settings,
+} from '@mui/icons-material';
 
 const SmallPromptBox = styled.div`
   display: flex;
@@ -13,7 +22,7 @@ export type PromptInfo = {
   raw: string;
   prompts: string[];
   promptDimensions: number[];
-}
+};
 
 type Props = {
   isGenerating: boolean;
@@ -21,19 +30,22 @@ type Props = {
   onStop: () => void;
 };
 
-function Prompt({isGenerating, onStart, onStop}: Props) {
-  const [promptStr, setPromptStr] = React.useState<string>("");
+function Prompt({ isGenerating, onStart, onStop }: Props) {
+  const [promptStr, setPromptStr] = React.useState<string>('');
 
   const [isFocused, setIsFocused] = React.useState(false);
   const handleFocus = React.useCallback(() => {
     setIsFocused(true);
     onStop();
   }, [onStop]);
-  const prompt = React.useMemo(() => ({
-    raw: promptStr,
-    prompts: [promptStr],
-    promptDimensions: [1],
-  }), [promptStr]);
+  const prompt = React.useMemo(
+    () => ({
+      raw: promptStr,
+      prompts: [promptStr],
+      promptDimensions: [1],
+    }),
+    [promptStr]
+  );
 
   const handleClick = React.useCallback(() => {
     if (isGenerating) {
@@ -44,39 +56,38 @@ function Prompt({isGenerating, onStart, onStop}: Props) {
     }
   }, [onStart, prompt]);
 
+  return (
+    <>
+      <SmallPromptBox>
+        <TextField
+          sx={{ ml: 1, flex: 1 }}
+          placeholder="Prompt Stable Diffusion"
+          value={promptStr}
+          onChange={(evt) => setPromptStr(evt.target.value)}
+          onFocus={handleFocus}
+          onBlur={() => setIsFocused(false)}
+          variant="standard"
+        />
+        <IconButton
+          type="button"
+          sx={{ p: '10px' }}
+          aria-label="search"
+          onClick={handleClick}
+          color={isGenerating ? 'error' : 'primary'}
+        >
+          {isGenerating ? <Dangerous /> : <ImagesearchRoller />}
+        </IconButton>
+        <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
 
-  return <>
-    <SmallPromptBox>
-
-      <TextField
-        sx={{ ml: 1, flex: 1 }}
-        placeholder="Prompt Stable Diffusion"
-        value={promptStr}
-        onChange={(evt) => setPromptStr(evt.target.value)}
-        onFocus={handleFocus}
-        onBlur={() => setIsFocused(false)}
-        variant="standard"
-      />
-      <IconButton 
-        type="button"
-        sx={{ p: '10px' }}
-        aria-label="search"
-        onClick={handleClick}
-        color={isGenerating ? "error" : "primary" }
-      >
-        {isGenerating ? <Dangerous /> : <ImagesearchRoller /> }
-      </IconButton>
-      <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
-
-      <IconButton sx={{ p: '10px' }} aria-label="directions">
-        <AddPhotoAlternate />
-      </IconButton>
-    <IconButton sx={{ p: '10px' }} aria-label="directions">
-        <Settings />
-      </IconButton>
-
-    </SmallPromptBox>
-  </>;
+        <IconButton sx={{ p: '10px' }} aria-label="directions">
+          <AddPhotoAlternate />
+        </IconButton>
+        <IconButton sx={{ p: '10px' }} aria-label="directions">
+          <Settings />
+        </IconButton>
+      </SmallPromptBox>
+    </>
+  );
 }
 
 export default Prompt;

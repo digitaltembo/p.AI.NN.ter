@@ -3,6 +3,7 @@ import argparse
 from transforms.gfpgan import create_gfpgan
 from transforms.real_ersgan import create_real_ersgan
 from transforms.stable_diffusion import create_stable_diffusion
+from utils.db import init_db
 from utils.file_utils import get_png_filename
 
 STABLE_DIFFUSION_ALIASES = ['stable-diffusion', 'generate', 'sd']
@@ -10,6 +11,7 @@ REAL_ESRGAN_ALIASES = ['real-esrgan', 'upscale', 're']
 GFPGAN_ALIASES = ['gfpgan', 'fix-faces', 'gfp']
 
 def main():
+    init_db()
     parser = argparse.ArgumentParser(
         description="Simple CLI for GPU Image Generation")
 

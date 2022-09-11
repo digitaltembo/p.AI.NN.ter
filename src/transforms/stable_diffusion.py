@@ -7,6 +7,7 @@ from diffusers import (StableDiffusionImg2ImgPipeline,
 from PIL import Image
 from torch import autocast, float16
 
+from utils.db import add_image_file, add_prompt
 from utils.file_utils import get_png_filename, trim_path
 from fastapi import APIRouter
 
@@ -153,6 +154,7 @@ def create_stable_diffusion(
     :return: path to generated image
     :rtype: str
     """
+    add_prompt(prompt, img_prompt)
     img = stable_diffusion(
         prompt=prompt,
         width=width,
@@ -169,9 +171,5 @@ def create_stable_diffusion(
         outfile = get_png_filename(prompt)
     print("Saving Stable Diffusion Image to ", outfile)
     img.save(outfile)
-    return {
-        "src": trim_path(outfile),
-        "width": img.width,
-        "height": img.height,
-        "alt": prompt,
-    }
+
+    return add_image_file(trim_path(outfile), prompt, img_prompt, img)

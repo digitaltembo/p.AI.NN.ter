@@ -34,7 +34,7 @@ function Gallery() {
 
   return <>
     <ReactGallery 
-      photos={files.outputs.map((src: string) => ({src, width:1, height:1}))}
+      photos={files.outputs}
       onClick={openLightbox}
     />
     <ModalGateway>
@@ -42,8 +42,8 @@ function Gallery() {
         <Modal onClose={closeLightbox}>
           <Carousel
             currentIndex={currentImage}
-            views={files.outputs.map(source => ({
-              source,
+            views={files.outputs.map(img => ({
+              source: img.src,
             }))}
           />
         </Modal>

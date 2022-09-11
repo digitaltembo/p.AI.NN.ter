@@ -5,6 +5,7 @@ from PIL import Image
 from pathlib import Path
 from fastapi import APIRouter
 
+from utils.db import add_image_file
 from utils.GFPGANer import GFPGANer
 from utils.file_utils import cache_remote_file, get_png_filename, trim_path
 
@@ -80,9 +81,10 @@ def create_gfpgan(
     outfile = get_png_filename('face_' + Path(args.prompt[0]).stem)
   print('Saving face fix to ', outfile)
   img.save(outfile)
-  return {
-    "src": trim_path(outfile),
-    "width": img.width(),
-    "height": img.height(),
-    "alt": "GFPGAN Face Restoration of " + input_image,
-  }
+
+  return add_image_file(
+    trim_path(outfile),
+    "GFPGAN Face Restoration of " + input_image,
+    input_image,
+    img
+  )

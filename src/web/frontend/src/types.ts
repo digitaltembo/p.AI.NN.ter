@@ -1,11 +1,15 @@
 export type Image = {
+  id: number;
+  isUpload: number;
+  referenceImage: number;
   src: string;
+  time: number;
+  alt: string;
   width: number;
   height: number;
-  alt: string;
 }
 
 export type FileList = {
-  uploads: string[],
-  outputs: string[]
+  uploads: Image[],
+  outputs: Image[]
 };

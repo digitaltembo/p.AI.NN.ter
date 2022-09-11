@@ -4,6 +4,7 @@ from typing import List
 from pathlib import Path
 
 from fastapi import APIRouter, FastAPI, File, UploadFile
+from utils.db import get_images, delete_image, add_image_file
 from utils.file_utils import ROOT_DIR, OUTPUT_DIR, UPLOAD_DIR, get_png_filename, trim_path
 
 router = APIRouter()
@@ -22,28 +23,30 @@ def get_files_in_dir(dir: str):
 
 @router.get("/files")
 def list_files():
-  print(UPLOAD_DIR)
   return {
-    "uploads": get_files_in_dir(UPLOAD_DIR),
-    "outputs": get_files_in_dir(OUTPUT_DIR)
+    "uploads": get_images(True),
+    "outputs": get_images(False)
   }
 
 @router.post("/files/upload")
 def upload_file(file: UploadFile):
+  print("Got file", file)
   basename = Path(file.filename).stem
   upload_dest = get_png_filename(basename, UPLOAD_DIR)
-
+  ret = None
   try:
     with open(upload_dest, "wb") as buffer:
       print("Saving image", upload_dest)
       shutil.copyfileobj(file.file, buffer)
+    ret = add_image_file(upload_dest, "Uploaded Image")
   finally:
     file.file.close()
+  return ret
 
 @router.delete("/files/delete")
 def delete_file(file: str):
-  filepath = os.path.join(ROOT_DIR, file)
+
+  filepath = ROOT_DIR + file
   if os.path.abspath(filepath).startswith(os.path.abspath(ROOT_DIR)):
-    print('Deleting file', filepath)
-    os.remove(filepath)
+    delete_image(file)
 

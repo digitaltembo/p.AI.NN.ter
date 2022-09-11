@@ -9,6 +9,7 @@ from PIL import Image
 from pathlib import Path
 from fastapi import APIRouter
 
+from utils.db import add_image_file
 from utils.file_utils import cache_remote_file, get_png_filename, trim_path
 
 router = APIRouter()
@@ -110,9 +111,10 @@ def create_real_ersgan(
     outfile = get_png_filename('upscale_' + Path(input_image).stem)
   print("Saving upscaled image to ", outfile)
   img.save(outfile)
-  return {
-    "src": trim_path(outfile),
-    "width": img.width(),
-    "height": img.height(),
-    "alt": "Real-ERSGAN Upscaling of " + input_image,
-  }
+
+  return add_image_file(
+    trim_path(outfile),
+    "Real-ERSGAN Upscaling of " + input_image,
+    input_image,
+    img
+  )

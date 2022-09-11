@@ -5,13 +5,16 @@ import shutil
 CACHE_DIR = os.getenv('CACHE_DIR', '/cache')
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+print("Running at", ROOT_DIR)
 OUTPUT_DIRNAME = 'output'
 OUTPUT_DIR = os.path.join(ROOT_DIR, OUTPUT_DIRNAME)
 UPLOAD_DIRNAME = 'uploads'
 UPLOAD_DIR = os.path.join(ROOT_DIR, UPLOAD_DIRNAME)
+DB_NAME = 'main.db'
+DB_PATH = os.path.join(CACHE_DIR, DB_NAME)
 
 def get_png_filename(name: str, dir: str = OUTPUT_DIR):
-    """sanitizes input and returns a unique png filename
+    """sanitizes input and returns an absolute path to a unique png filename
 
     :param name: first attempt at a basename
     :type name: str
