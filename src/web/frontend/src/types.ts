@@ -13,3 +13,15 @@ export type FileList = {
   uploads: Image[],
   outputs: Image[]
 };
+
+export type PromptComponent = {
+  label?: string;
+  alts: string[];
+  active: string;
+}
+export type PromptInfo = {
+  raw: string;
+  components: PromptComponent[];
+  prompts: string[];
+  promptDimensions: number[];
+};

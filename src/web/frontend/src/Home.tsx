@@ -1,8 +1,10 @@
 import { CircularProgress } from "@mui/material";
 import React from "react";
-import Prompt, { PromptInfo } from "./Prompt";
-import { Image } from "./types";
+import styled from "styled-components";
+import Prompt from "./Prompt";
+import { Image, PromptInfo } from "./types";
 
+const ImagePromptBox = styled.div``;
 function Home() {
 
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -10,8 +12,9 @@ function Home() {
   const currentIndex = React.useRef<number>(0);
 
   const [images, setImages] = React.useState<Image[]>([]);
+  const [imagePrompt, setImagePrompt] = React.useState<Image | null>(null)
 
-  const [prompt, setPrompt] = React.useState<PromptInfo>({raw: "", prompts: [], promptDimensions: []});
+  const [prompt, setPrompt] = React.useState<PromptInfo>({raw: "", components: [], prompts: [], promptDimensions: []});
 
   const handleStart = React.useCallback(async (promptInfo: PromptInfo) => {
     setPrompt(promptInfo);
@@ -32,7 +35,16 @@ function Home() {
       console.log("Looking! for", prompt);
       if (shouldBeGenerating.current && prompt.prompts.length && !stop) {
         const currentPrompt = prompt.prompts[currentIndex.current];
-        fetch(`/api/transforms/stable-diffusion?prompt=${currentPrompt}`, {method: 'POST'})
+        const url = new URL(document.baseURI + "api/transforms/stable-diffusion");
+        const params: Record<string, string> = {
+            prompt: currentPrompt,
+        };
+        if (imagePrompt) {
+          params["image_prompt"] = encodeURIComponent(imagePrompt.src);
+        }
+        console.log("Loook", params);
+        url.search = new URLSearchParams(params).toString()
+        fetch(url.toString(), {method: 'POST'})
             .then((res) => res.json())
             .then((newImage) => {
               setImages((imgs) => [...imgs, newImage]);
@@ -43,12 +55,19 @@ function Home() {
     };
     callback();
     return () => { stop = false; };
-  }, [prompt]);
+  }, [prompt, imagePrompt]);
   return <>
     <Prompt
       isGenerating={isGenerating}
       onStop={handleStop}
-      onStart={handleStart}/>
+      onStart={handleStart}
+      setImagePrompt={setImagePrompt}
+    />
+    { imagePrompt && 
+      <ImagePromptBox>
+        <span>Searching for images in the style of:</span>
+        <img src={imagePrompt.src} alt={imagePrompt.src} />
+      </ImagePromptBox>}
     { images.map((img, i) => <img key={img.src} src={img.src} alt={img.alt} />) }
     { isGenerating &&  <CircularProgress /> }
   </>

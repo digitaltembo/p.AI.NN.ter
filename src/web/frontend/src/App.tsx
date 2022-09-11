@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import { Link } from "@mui/material";
 
-import Gallery from "./Gallery";
+import GalleryPage from "./GalleryPage";
 import Home from './Home';
 
 const Header = styled.nav`
@@ -27,7 +27,7 @@ function App() {
       </Header>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/gallery" element={<Gallery />} />
+        <Route path="/gallery" element={<GalleryPage />} />
       </Routes>
     </BrowserRouter>
   );
