@@ -7,7 +7,7 @@ import {
   ImagesearchRoller,
   Settings,
 } from '@mui/icons-material';
-import { Image, PromptInfo, PromptComponent } from './types';
+import { PromptContext } from '../PromptContext';
 
 const SmallPromptBox = styled.div`
   display: flex;
@@ -15,93 +15,29 @@ const SmallPromptBox = styled.div`
   flex-direction: row;
 `;
 
-type PromptCoord = number[];
-
 type Props = {
   isGenerating: boolean;
-  onStart: (prompt: PromptInfo) => void;
+  onStart: () => void;
   onStop: () => void;
-  setImagePrompt: (imagePath: Image | null) => void;
 };
 
-function getPromptAtCoord(components: PromptComponent[], coord: PromptCoord) {
-  const parts = [];
-  let coordIndex = 0;
-  for (const component of components) {
-    if (component.alts.length === 1) {
-      parts.push(component.alts[0]);
-    } else {
-      parts.push(component.alts[coord[coordIndex]]);
-      coordIndex += 1;
-    }
-  }
-  return parts.join(' ');
-}
-function getPromptInfo(components: PromptComponent[]): PromptInfo {
-  const raw = components
-    .map(({ alts }) =>
-      alts.length > 1 ? `(${alts.join(' | ')})` : alts[0] ?? ''
-    )
-    .join(' ');
-  // "Dimensions" here refers to the choices that can be made in the construction of the prompt
-  const promptDimensions = [
-    1,
-    ...components.map(({ alts }) => alts.length).filter((dim) => dim !== 1),
-  ];
-
-  // Create a list of coordinates a la [[0,0,0], [0,0,1], [0,1,0], etc...]
-  // that represent choices between the alternatives in the prompt components
-  // By a) going through the dimensions one by one
-  const promptCoords = promptDimensions.reduce<PromptCoord[]>(
-    (oldCoords, dimension) =>
-      // and taking each newCoord from that dimension, 0...n
-      Array(dimension)
-        .fill(0)
-        .reduce<PromptCoord[]>(
-          (newCoords: PromptCoord[], _, newDimensionValue: number) => [
-            ...newCoords,
-            // and adding it to the end of all the coordinates previously processed
-            ...oldCoords.map((oldCoord) => [...oldCoord, newDimensionValue]),
-          ],
-          []
-        ),
-    [[]]
-  );
-
-  const prompts = promptCoords.map((coord) =>
-    getPromptAtCoord(components, coord)
-  );
-  return { raw, components, promptDimensions, prompts };
-}
-
-function Prompt({ isGenerating, onStart, onStop, setImagePrompt }: Props) {
-  const [promptComponents, setPromptComponents] = React.useState<
-    PromptComponent[]
-  >([
-    {
-      alts: [''],
-      active: '',
-    },
-  ]);
+function Prompt({ isGenerating, onStart, onStop }: Props) {
+  const { setParameters, setPromptComponents, promptInfo } = React.useContext(PromptContext);
 
   const [isFocused, setIsFocused] = React.useState(false);
   const handleFocus = React.useCallback(() => {
     setIsFocused(true);
     onStop();
   }, [onStop]);
-  const prompt = React.useMemo(
-    () => getPromptInfo(promptComponents),
-    [promptComponents]
-  );
 
   const handleClick = React.useCallback(() => {
     if (isGenerating) {
       onStop();
     } else {
       setIsFocused(false);
-      onStart(prompt);
+      onStart();
     }
-  }, [onStart, prompt]);
+  }, [isGenerating, onStart, onStop]);
 
   const handleFileUpload = React.useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,10 +47,10 @@ function Prompt({ isGenerating, onStart, onStop, setImagePrompt }: Props) {
         formData.append('file', file);
         fetch('/api/files/upload', { method: 'POST', body: formData })
           .then((res) => res.json())
-          .then((res) => setImagePrompt(res));
+          .then((res) => setParameters((params) => ({...params, imagePrompt: res})));
       }
     },
-    [setImagePrompt]
+    [setParameters]
   );
 
   const handleTextInput = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +59,7 @@ function Prompt({ isGenerating, onStart, onStop, setImagePrompt }: Props) {
       lastComponent.alts[0] = event.target.value;
       return [...components.slice(0, -1), lastComponent];
     });
-  }, []);
+  }, [setPromptComponents]);
 
   return (
     <>
@@ -131,7 +67,7 @@ function Prompt({ isGenerating, onStart, onStop, setImagePrompt }: Props) {
         <TextField
           sx={{ ml: 1, flex: 1 }}
           placeholder="Prompt Stable Diffusion"
-          value={prompt.raw}
+          value={promptInfo.raw}
           onChange={handleTextInput}
           onFocus={handleFocus}
           onBlur={() => setIsFocused(false)}

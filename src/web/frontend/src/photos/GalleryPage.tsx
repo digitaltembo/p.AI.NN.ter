@@ -2,7 +2,7 @@ import React from "react";
 import toast from "react-hot-toast";
 import  ReactGallery, { PhotoClickHandler } from "react-photo-gallery";
 import Carousel, { Modal, ModalGateway as BrokenModalGateway } from "react-images";
-import { FileList } from "./types";
+import { FileList } from "../types";
 
 const ModalGateway = BrokenModalGateway as any;
 

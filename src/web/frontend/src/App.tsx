@@ -8,8 +8,9 @@ import {
 } from "react-router-dom";
 import { Link } from "@mui/material";
 
-import GalleryPage from "./GalleryPage";
-import Home from './Home';
+import GalleryPage from "./photos/GalleryPage";
+import Home from './home/Home';
+import { PromptContextProvider } from './PromptContext';
 
 const Header = styled.nav`
   display: flex;
@@ -25,10 +26,12 @@ function App() {
         <Link component={RouterLink} to="/" color="inherit" variant="h3">p.ai.nn.ter</Link>
         <Link component={RouterLink} to="/gallery" color="inherit" variant="h3">gallery</Link>
       </Header>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/gallery" element={<GalleryPage />} />
-      </Routes>
+      <PromptContextProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/gallery" element={<GalleryPage />} />
+        </Routes>
+      </PromptContextProvider>
     </BrowserRouter>
   );
 }
