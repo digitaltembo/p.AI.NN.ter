@@ -2,12 +2,13 @@ import React from 'react';
 import styled from 'styled-components';
 import { Divider, IconButton, TextField } from '@mui/material';
 import {
-  AddPhotoAlternate,
-  Dangerous,
-  ImagesearchRoller,
-  Settings,
+  AddPhotoAlternate as UseImageIcon,
+  Dangerous as StopIcon,
+  ImagesearchRoller as PaintIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { PromptContext } from '../PromptContext';
+import Settings from './Settings';
 
 const SmallPromptBox = styled.div`
   display: flex;
@@ -23,7 +24,7 @@ type Props = {
 
 function Prompt({ isGenerating, onStart, onStop }: Props) {
   const { setParameters, setPromptComponents, promptInfo } = React.useContext(PromptContext);
-
+  const [showSettings, setShowSettings] = React.useState(false);
   const [isFocused, setIsFocused] = React.useState(false);
   const handleFocus = React.useCallback(() => {
     setIsFocused(true);
@@ -80,7 +81,7 @@ function Prompt({ isGenerating, onStart, onStop }: Props) {
           onClick={handleClick}
           color={isGenerating ? 'error' : 'primary'}
         >
-          {isGenerating ? <Dangerous /> : <ImagesearchRoller />}
+          {isGenerating ? <StopIcon /> : <PaintIcon />}
         </IconButton>
         <Divider sx={{ height: 28, m: 0.5 }} orientation="vertical" />
 
@@ -95,11 +96,12 @@ function Prompt({ isGenerating, onStart, onStop }: Props) {
             type="file"
             onChange={handleFileUpload}
           />
-          <AddPhotoAlternate />
+          <UseImageIcon />
         </IconButton>
-        <IconButton sx={{ p: '10px' }} aria-label="directions">
-          <Settings />
+        <IconButton sx={{ p: '10px' }} aria-label="directions" onClick={() => setShowSettings(true)}>
+          <SettingsIcon />
         </IconButton>
+        <Settings open={showSettings} onClose={() => setShowSettings(false)} />
       </SmallPromptBox>
     </>
   );

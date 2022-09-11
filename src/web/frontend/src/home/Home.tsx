@@ -26,18 +26,21 @@ function Home() {
   }, []);
 
   React.useEffect(() => {
-    let stop = false
-    const callback = () => {
-      if (shouldBeGenerating.current && !stop) {
-        getNextStableDiffusion().then((newImage) => {
-          setImages((imgs) => [...imgs, newImage]);
-          callback();
-        })
-      }
-    };
-    callback();
-    return () => { stop = false; };
-  }, [getNextStableDiffusion]);
+    if(isGenerating) {
+      let stop = false;
+      const callback = () => {
+        console.log("starting??")
+        if (shouldBeGenerating.current && !stop) {
+          getNextStableDiffusion().then((newImage) => {
+            setImages((imgs) => [...imgs, newImage]);
+            callback();
+          })
+        }
+      };
+      callback();
+      return () => { stop = false; };
+    }
+  }, [getNextStableDiffusion, isGenerating]);
 
   return <>
     <Prompt

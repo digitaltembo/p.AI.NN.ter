@@ -26,9 +26,14 @@ type PromptContextTypr = {
 export const DEFAULT_PROMPT_CONTEXT: PromptContextTypr = {
   promptInfo: {
     raw: '',
-    components: [],
+    components: [
+      {
+        alts: [''],
+        active: '',
+      },
+    ],
     prompts: [],
-    promptDimensions: [],
+    promptDimensions: [1],
   },
   setPromptInfo: () => {},
   setPromptComponents: () => {},
@@ -91,6 +96,14 @@ function getPromptInfo(components: PromptComponent[]): PromptInfo {
   return { raw, components, promptDimensions, prompts };
 }
 
+const OPTIONAL_PARAMS: {[key: string]: (p: StableDiffusionParameters) => string | number | boolean | undefined} = {
+  "image_prompt": (p) => p.promptImage?.src,
+  "width": (p) => p.width,
+  "height": (p) => p.height,
+  "fix_faces": (p) => p.fixFaces,
+  "upscale": (p) => p.upscale,
+};
+
 export function PromptContextProvider({
   children,
 }: React.PropsWithChildren<{}>) {
@@ -109,13 +122,17 @@ export function PromptContextProvider({
   }, []);
 
   const getNextStableDiffusion = React.useCallback(() => {
+    console.log("starting stable diffusion?");
     const currentPrompt = promptInfo.prompts[promptIndex.current];
     const url = new URL(document.baseURI + 'api/transforms/stable-diffusion');
     const params: Record<string, string> = {
       prompt: currentPrompt,
     };
-    if (parameters.promptImage) {
-      params['image_prompt'] = encodeURIComponent(parameters.promptImage.src);
+    for (const key of Object.keys(OPTIONAL_PARAMS)) {
+      const val = OPTIONAL_PARAMS[key](parameters);
+      if (val !== undefined) {
+        params[key] = encodeURIComponent(val);
+      }
     }
     url.search = new URLSearchParams(params).toString();
     return fetch(url.toString(), { method: 'POST' })
@@ -140,7 +157,13 @@ export function PromptContextProvider({
       setParameters,
       getNextStableDiffusion,
     }),
-    [promptInfo, parameters, getNextStableDiffusion, handleNewPrompt, setPromptComponents]
+    [
+      promptInfo,
+      parameters,
+      getNextStableDiffusion,
+      handleNewPrompt,
+      setPromptComponents,
+    ]
   );
 
   return (
