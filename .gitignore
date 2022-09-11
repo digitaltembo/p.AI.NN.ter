@@ -5,3 +5,4 @@ output
 uploads
 venv
 node_modules
+build
