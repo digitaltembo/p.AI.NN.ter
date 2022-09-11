@@ -62,7 +62,29 @@ def prefetch():
   get_upsampler(false)
   get_upsampler(true)
 
-def real_ersgan(
+def real_ersgan_image(
+  input_image,
+  scale: int = 2.0,
+  for_anime: Optional[bool] = False,
+):
+  """Uses [Real-ERSGAN](https://github.com/xinntao/Real-ESRGAN) model for image upscaling
+
+  :param input_image: CV2 Image Mat to upscale
+  :type input_image: Cv2 Image Mat
+  :param scale: factor by which to upscale
+  :type scale: int
+  :param for_anime: If true, uses a different model optemized for cartoons/anime, defaults to False
+  :type for_anime: Optional[bool], optional
+  :return: Upscaled image
+  :rtype: PIL.Image
+  """
+  upsampler = get_upsampler(for_anime)
+  output, _ = upsampler.enhance(input_image, outscale = scale)
+  output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
+  return Image.fromarray(output)
+
+
+def real_ersgan_file(
   input_image: str,
   scale: int = 2.0,
   for_anime: Optional[bool] = False,
@@ -78,12 +100,8 @@ def real_ersgan(
   :return: Upscaled image
   :rtype: PIL.Image
   """
-  upsampler = get_upsampler(for_anime)
-  
   img = cv2.imread(input_image, cv2.IMREAD_COLOR)
-  output, _ = upsampler.enhance(img, outscale = scale)
-  output = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
-  return Image.fromarray(output)
+  return real_ersgan_image(img, scale, for_anime)
 
 @router.post("/transforms/real-ersgan")
 def create_real_ersgan(

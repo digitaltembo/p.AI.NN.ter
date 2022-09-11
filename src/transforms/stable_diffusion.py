@@ -6,10 +6,13 @@ from diffusers import (StableDiffusionImg2ImgPipeline,
                        StableDiffusionInpaintPipeline, StableDiffusionPipeline)
 from PIL import Image
 from torch import autocast, float16
+from fastapi import APIRouter
 
+from transforms.gfpgan import gfpgan_image
+from transforms.real_ersgan import real_ersgan_image
 from utils.db import add_image_file, add_prompt
 from utils.file_utils import get_png_filename, trim_path
-from fastapi import APIRouter
+from utils.images import pil2opencv
 
 router = APIRouter()
 
@@ -122,6 +125,8 @@ def create_stable_diffusion(
     outfile: Optional[str] = None,
     width: int = 512,
     height: int = 512,
+    upscale: Optional[float] = None,
+    fix_faces: bool = False,
     img_prompt: Optional[str] = None,
     img_mask: Optional[str] = None,
     num_inference_steps: int = 50,
@@ -143,6 +148,10 @@ def create_stable_diffusion(
     :type width: int, optional
     :param height: Height of output image. Only outputs in multiples of 8, and works best for 512, defaults to 512
     :type height: int, optional
+    :param upscale: If defined, use Real-ERSGAN model for upscaling the output by the factor provided
+    :type upscale: float, optional
+    :param fix_faces: If set to true, use GFPGAN model for face restoration (otherwise, stable-diffusion struggles a bit)
+    :param fix_faces: bool, optional
     :param num_inference_steps: The number of denoising steps. More denoising steps usually lead to a higher quality image at the expense of slower inference.
     :type num_inference_steps: int, optional
     :param guidance_scale: Higher guidance scale encourages to generate images that are closely linked to the text prompt, usually at the expense of lower image quality. See https://arxiv.org/pdf/2205.11487.pdf. Defaults to 7.5
@@ -166,6 +175,13 @@ def create_stable_diffusion(
         eta=eta,
         strength=strength,
     )
+
+    if upscale is not None or fix_faces:
+      cv_image = pil2opencv(img)
+      if fix_faces:
+        img = gfpgan_image(cv_image, upscale if upscale is not None else 1.0, only_center_face=False, prealligned=False)
+      else:
+        img = real_ersgan_image(cv_image, upscale, for_anime=False)
 
     if outfile is None:
         outfile = get_png_filename(prompt)
