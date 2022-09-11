@@ -1,6 +1,7 @@
 import { CircularProgress } from "@mui/material";
 import React from "react";
 import Prompt, { PromptInfo } from "./Prompt";
+import { Image } from "./types";
 
 function Home() {
 
@@ -8,7 +9,7 @@ function Home() {
   const shouldBeGenerating = React.useRef<boolean>(false);
   const currentIndex = React.useRef<number>(0);
 
-  const [images, setImages] = React.useState<string[]>([]);
+  const [images, setImages] = React.useState<Image[]>([]);
 
   const [prompt, setPrompt] = React.useState<PromptInfo>({raw: "", prompts: [], promptDimensions: []});
 
@@ -31,7 +32,7 @@ function Home() {
       console.log("Looking! for", prompt);
       if (shouldBeGenerating.current && prompt.prompts.length && !stop) {
         const currentPrompt = prompt.prompts[currentIndex.current];
-        fetch(`/transforms/stable-diffusion?prompt=${currentPrompt}`, {method: 'POST'})
+        fetch(`/api/transforms/stable-diffusion?prompt=${currentPrompt}`, {method: 'POST'})
             .then((res) => res.json())
             .then((newImage) => {
               setImages((imgs) => [...imgs, newImage]);
@@ -44,11 +45,12 @@ function Home() {
     return () => { stop = false; };
   }, [prompt]);
   return <>
-    <Prompt 
-      onFocus={handleStop}
+    <Prompt
+      isGenerating={isGenerating}
+      onStop={handleStop}
       onStart={handleStart}/>
+    { images.map((img, i) => <img key={img.src} src={img.src} alt={img.alt} />) }
     { isGenerating &&  <CircularProgress /> }
-    { images.map((img, i) => <img key={img} src={img} alt={prompt.prompts[i]} />) }
   </>
 }
 

@@ -25,7 +25,7 @@ function Gallery() {
 
 
   React.useEffect(() => {
-    fetch('/files')
+    fetch('/api/files')
       .then((res) => res.json())
       .then(setFiles)
       .catch((err) => toast("Failed to retrieve files"));

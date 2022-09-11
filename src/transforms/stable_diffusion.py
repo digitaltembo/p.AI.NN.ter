@@ -171,7 +171,7 @@ def create_stable_diffusion(
     img.save(outfile)
     return {
         "src": trim_path(outfile),
-        "width": img.width(),
-        "height": img.height(),
+        "width": img.width,
+        "height": img.height,
         "alt": prompt,
     }
