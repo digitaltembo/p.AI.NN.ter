@@ -3,7 +3,7 @@ addict==2.4.0
 aiohttp==3.8.1
 aiosignal==1.2.0
 alabaster==0.7.12
-anaconda-client==1.9.0
+anaconda-client==1.11.0
 anaconda-navigator==2.1.4
 anaconda-project==0.10.2
 anyio==3.6.1
